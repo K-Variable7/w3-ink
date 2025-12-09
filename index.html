@@ -89,17 +89,20 @@
         const status = document.getElementById('status');
 
         async function connectWallet() {
+            console.log('Connecting wallet...');
             if (window.ethereum) {
                 try {
-                    // Request to switch to Base network
+                    console.log('Switching to Base...');
                     await window.ethereum.request({
                         method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: '0x2105' }], // Base mainnet chainId
+                        params: [{ chainId: '0x2105' }],
                     });
+                    console.log('Switched to Base');
                 } catch (switchError) {
-                    // If network not added, add it
+                    console.log('Switch error:', switchError);
                     if (switchError.code === 4902) {
                         try {
+                            console.log('Adding Base network...');
                             await window.ethereum.request({
                                 method: 'wallet_addEthereumChain',
                                 params: [{
@@ -110,7 +113,9 @@
                                     blockExplorerUrls: ['https://basescan.org'],
                                 }],
                             });
+                            console.log('Added Base');
                         } catch (addError) {
+                            console.error('Add error:', addError);
                             status.textContent = 'Failed to add Base network: ' + addError.message;
                             return;
                         }
@@ -124,6 +129,7 @@
                 await provider.send("eth_requestAccounts", []);
                 signer = await provider.getSigner();
                 const network = await provider.getNetwork();
+                console.log('Network:', network);
                 if (network.chainId !== 8453n) {
                     status.textContent = 'Please switch to Base network.';
                     return;
