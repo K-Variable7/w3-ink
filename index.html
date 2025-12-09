@@ -90,13 +90,43 @@
 
         async function connectWallet() {
             if (window.ethereum) {
+                try {
+                    // Request to switch to Base network
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0x2105' }], // Base mainnet chainId
+                    });
+                } catch (switchError) {
+                    // If network not added, add it
+                    if (switchError.code === 4902) {
+                        try {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: '0x2105',
+                                    chainName: 'Base',
+                                    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                                    rpcUrls: ['https://mainnet.base.org'],
+                                    blockExplorerUrls: ['https://basescan.org'],
+                                }],
+                            });
+                        } catch (addError) {
+                            status.textContent = 'Failed to add Base network: ' + addError.message;
+                            return;
+                        }
+                    } else {
+                        status.textContent = 'Failed to switch to Base network: ' + switchError.message;
+                        return;
+                    }
+                }
+
                 provider = new ethers.BrowserProvider(window.ethereum);
                 await provider.send("eth_requestAccounts", []);
                 signer = await provider.getSigner();
                 contract = new ethers.Contract(contractAddress, abi, signer);
                 connectBtn.style.display = 'none';
                 mintBtn.style.display = 'inline';
-                status.textContent = 'Wallet connected! Ready to mint.';
+                status.textContent = 'Wallet connected to Base! Ready to mint.';
             } else {
                 status.textContent = 'Please install MetaMask or a Web3 wallet.';
             }
