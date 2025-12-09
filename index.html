@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web3 Ink - Dynamic NFT</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0f0f23, #1a1a2e);
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #00ffff;
+        }
+        p {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin: 10px;
+        }
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 1em;
+        }
+        .evolution {
+            margin-top: 30px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Web3 Ink</h1>
+        <p>Web3 Ink is a dynamic NFT that evolves with your Web3 activity. Start with a simple dot and watch it draw a cosmic masterpiece as you connect and interact. At 50+ connections, unlock a special VaultWars hint! Mint for 0.005 ETH on Base.</p>
+        <button id="connectBtn">Connect Wallet</button>
+        <button id="mintBtn" style="display: none;">Mint for 0.005 ETH</button>
+        <div id="status"></div>
+        <div class="evolution">
+            <p>Evolution Stages: Dot → Line → Curve → Cosmic Masterpiece</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.min.js"></script>
+    <script>
+        const contractAddress = '0x59add2F3EDcf90ed5d27c9BC9a4EC1C03e8885f1'; // Replace with deployed address
+        const abi = [
+            "function mint() payable",
+            "function checkIn()",
+            "function connectionCount(address) view returns (uint256)",
+            "function totalSupply() view returns (uint256)",
+            "function maxSupply() pure returns (uint256)"
+        ];
+
+        let provider, signer, contract;
+        const connectBtn = document.getElementById('connectBtn');
+        const mintBtn = document.getElementById('mintBtn');
+        const status = document.getElementById('status');
+
+        async function connectWallet() {
+            if (window.ethereum) {
+                provider = new ethers.BrowserProvider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                signer = await provider.getSigner();
+                contract = new ethers.Contract(contractAddress, abi, signer);
+                connectBtn.style.display = 'none';
+                mintBtn.style.display = 'inline';
+                status.textContent = 'Wallet connected! Ready to mint.';
+            } else {
+                status.textContent = 'Please install MetaMask or a Web3 wallet.';
+            }
+        }
+
+        async function mint() {
+            try {
+                const tx = await contract.mint({ value: ethers.parseEther('0.005') });
+                status.textContent = 'Minting... Please wait.';
+                await tx.wait();
+                status.textContent = 'Minted successfully! Check your wallet.';
+            } catch (error) {
+                status.textContent = 'Mint failed: ' + error.message;
+            }
+        }
+
+        connectBtn.addEventListener('click', connectWallet);
+        mintBtn.addEventListener('click', mint);
+    </script>
+</body>
+</html>
