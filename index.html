@@ -72,7 +72,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script>
         const contractAddress = '0x59add2F3EDcf90ed5d27c9BC9a4EC1C03e8885f1'; // Replace with deployed address
         const abi = [
@@ -125,12 +125,12 @@
                     }
                 }
 
-                provider = new ethers.BrowserProvider(window.ethereum);
+                provider = new ethers.providers.Web3Provider(window.ethereum);
                 await provider.send("eth_requestAccounts", []);
-                signer = await provider.getSigner();
+                signer = provider.getSigner();
                 const network = await provider.getNetwork();
                 console.log('Network:', network);
-                if (network.chainId !== 8453n) {
+                if (network.chainId !== 8453) {
                     status.textContent = 'Please switch to Base network.';
                     return;
                 }
@@ -146,7 +146,7 @@
         async function mint() {
             try {
                 status.textContent = 'Preparing transaction...';
-                const tx = await contract.mint({ value: ethers.parseEther('0.005') });
+                const tx = await contract.mint({ value: ethers.utils.parseEther('0.005') });
                 status.textContent = 'Transaction submitted. Waiting for confirmation...';
                 await tx.wait();
                 status.textContent = 'Minted successfully! Check your wallet for the NFT.';
